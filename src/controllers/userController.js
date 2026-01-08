@@ -9,14 +9,16 @@ export const register = async (req, res) => {
     // Validate input data
     validate(req.body);
 
-    const { fname, emailId, password } = req.body;
+    const { fname, emailId, password , lname } = req.body;
 
-    //  Hash password BEFORE saving to DB
     const hashedPassword = await bcrypt.hash(password, 10);
+   // if any one come with this register path then it's going to be User
+    req.body.role= "user"
 
     //  Create user with hashed password
     const user = await User.create({
       fname,
+      lname,
       emailId,
       password: hashedPassword,
     });
@@ -114,7 +116,7 @@ export const logout = async (req, res) => {
     await redisClient.set(`token: ${token}`, "Blocked");
     await redisClient.expireAt(`token: ${token}`, payload.exp);
 
-    res.cookie("token", null, new Date(Date.now()));
+    res.cookie("token", null,{ expires : new Date(Date.now())});
     res.json({
       success: true,
       message: "Logged out successfully",
