@@ -1,3 +1,4 @@
+import { redisClient } from "../config/redis.js";
 import User from "../models/userModel.js";
 import { validate } from "../utils/validater.js";
 import bcrypt from "bcrypt";
@@ -21,15 +22,13 @@ export const register = async (req, res) => {
     });
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, emailId },
-      process.env.JWT_KEY,
-      { expiresIn: 60 * 60 } 
-    );
+    const token = jwt.sign({ id: user._id, emailId }, process.env.JWT_KEY, {
+      expiresIn: 60 * 60,
+    });
 
-    //  
+    //
     res.cookie("token", token, {
-      maxAge: 60 * 60 * 1000, 
+      maxAge: 60 * 60 * 1000,
       httpOnly: true,
     });
 
@@ -38,18 +37,16 @@ export const register = async (req, res) => {
       success: true,
       message: "User Created Successfully",
     });
-
   } catch (error) {
     console.error(error);
 
     // Correct status code for server error
     res.status(500).json({
       success: false,
-      message: "Internal server error Govardhan",
+      message: "User already exist ",
     });
   }
 };
-
 
 export const login = async (req, res) => {
   try {
@@ -82,15 +79,13 @@ export const login = async (req, res) => {
     }
 
     // Create token
-    const token = jwt.sign(
-      { id: user._id, emailId },
-      process.env.JWT_KEY,
-      { expiresIn: 60 * 60 } 
-    );
+    const token = jwt.sign({ id: user._id, emailId }, process.env.JWT_KEY, {
+      expiresIn: 60 * 60,
+    });
 
     // Set cookie
     res.cookie("token", token, {
-      maxAge: 60 * 60 * 1000, 
+      maxAge: 60 * 60 * 1000,
       httpOnly: true,
     });
 
@@ -99,7 +94,6 @@ export const login = async (req, res) => {
       success: true,
       message: "Logged in successfully",
     });
-
   } catch (error) {
     console.error(error);
 
@@ -111,13 +105,25 @@ export const login = async (req, res) => {
   }
 };
 
-
-export const logout = () => {
+export const logout = async (req, res) => {
   try {
+    const { token } = req.cookies;
+
+    const payload = jwt.decode(token);
+
+    await redisClient.set(`token: ${token}`, "Blocked");
+    await redisClient.expireAt(`token: ${token}`, payload.exp);
+
+    res.cookie("token", null, new Date(Date.now()));
+    res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
   } catch (error) {
     res.status(401).json({
       success: false,
-      message: "Internal server error govardhan",
+      message: "Invalid or expired token",
     });
   }
 };
+
