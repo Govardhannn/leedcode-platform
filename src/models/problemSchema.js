@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
- const problemSchema = new Schema({
+const problemSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -56,15 +56,26 @@ import mongoose, { Schema } from "mongoose";
       required: true,
     },
   },
-  problemCreator :{
-
-    type: Schema.Types.ObjectId,  // here refferring the schema from userModels 
-    Ref: "user",
-    required: true
-  }
+  problemCreator: {
+    type: Schema.Types.ObjectId, // here refferring the schema from userModels
+    ref: "user",
+    required: true,
+  },
+  referenceSolution: [
+    {
+      language: {
+        type: String,
+        required: true,
+      },
+      completCode: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
 });
-//const User = mongoose.model("user", userSchema);
 
-const problem  = mongoose.model("problem", problemSchema)
+
+const problem = mongoose.model("problem", problemSchema);
 
 export default problem;

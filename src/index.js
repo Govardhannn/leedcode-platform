@@ -5,11 +5,12 @@ import cookieParser from "cookie-parser";
 import authRoute from "./routes/userRoute.js";
 import { redisClient } from "./config/redis.js";
 import connectDB from "./config/db.js";
+import { problemRoute } from "./routes/problemRoute.js";
 
 app.use(express.json());
 app.use(cookieParser());
 app.use("/user", authRoute);
-
+app.use("/problem", problemRoute )
 
 
 const InitalizeConnection = async () => {
@@ -26,6 +27,3 @@ const InitalizeConnection = async () => {
 };
 InitalizeConnection();
 
-// connectDB().then(async () => {
-
-// });

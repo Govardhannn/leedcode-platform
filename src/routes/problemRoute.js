@@ -1,17 +1,20 @@
 import express from "express";
 
-const problemRoute = express.Router();
+export const problemRoute = express.Router();
+import { adminMiddleware } from "../middleware/adminMiddleware.js";
+import {userMiddleware} from "../middleware/userMiddleware.js"
+import { createProblem, updateProblem, deleteProblem , getProblemById , getAllProblem, } from "../controllers/userProblem.js";
 
 //create
-problemRoute.post("/create", createProblem);
-problemRoute.get("/:id", updateProblem);
-problemRoute.patch("/:id", deleteProblem);
+problemRoute.post("/create" , adminMiddleware  , createProblem);
+problemRoute.put("/update/:id", adminMiddleware, updateProblem);
+problemRoute.delete("/delete/:id",adminMiddleware, deleteProblem);
 
 
 
-problemRoute.get("/",getAllProblemById);
-problemRoute.get("/:id", getAllProblem);
-problemRoute.get("/user", solveProblem);
+problemRoute.get("/problemById/:id", userMiddleware, getProblemById);
+problemRoute.get("/getAllProblem", userMiddleware, getAllProblem);
+// problemRoute.get("/problemSolveByUser ",userMiddleware,  problemSolveByUser);
 // fetch
 // update
 // delete
