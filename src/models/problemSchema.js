@@ -18,12 +18,12 @@ const problemSchema = new Schema({
     enum: ["array", "linkedList", "graph", "dp"],
     required: true,
   },
-  viaiableTestCases: {
+  visibleTestCases: {
     input: {
       type: String,
       required: true,
     },
-    outout: {
+    output: {
       type: String,
       required: true,
     },
@@ -37,7 +37,7 @@ const problemSchema = new Schema({
       type: String,
       required: true,
     },
-    outout: {
+    output: {
       type: String,
       required: true,
     },
@@ -46,7 +46,7 @@ const problemSchema = new Schema({
       required: true,
     },
   },
-  strartCode: {
+  startCode: {
     language: {
       type: String,
       required: true,
@@ -67,7 +67,7 @@ const problemSchema = new Schema({
         type: String,
         required: true,
       },
-      completCode: {
+      completeCode: {
         type: String,
         required: true,
       },

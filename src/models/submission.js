@@ -3,12 +3,12 @@ import mongoose, { Schema } from "mongoose";
 const submissionSchema = new Schema(
   {
     userId: {
-      type: Schema.Type.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
     problemId: {
-      type: Schema.Type.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "problem",
       required: true,
     },

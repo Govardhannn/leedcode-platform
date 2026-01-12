@@ -14,15 +14,14 @@ export const adminRegister = async (req, res) => {
     const { fname, emailId, password, lname } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    // if any one come with this register path then it's going to be User
-    req.body.role = "admin";
 
-    //  Create user with hashed password
+    //  Create user with hashed password and admin role
     const user = await User.create({
       fname,
       lname,
       emailId,
       password: hashedPassword,
+      role: "admin",
     });
 
     // Generate JWT token

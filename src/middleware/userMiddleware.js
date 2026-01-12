@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 
 export const userMiddleware = async (req, res, next) => {
   try {
-    const { token } = req.cookies;
+    // Get token from cookie OR Authorization header
+    const token =
+      req.cookies?.token ||
+      req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ message: "Token is not present" });
@@ -13,25 +16,22 @@ export const userMiddleware = async (req, res, next) => {
     // Verify JWT
     const payload = jwt.verify(token, process.env.JWT_KEY);
 
-   
     const { id } = payload;
 
- 
     if (!id) {
-      return res.status(401).json({ message: "Invalid Token govardhan" });
+      return res.status(401).json({ message: "Invalid token" });
     }
 
-
-    const result = await User.findById(id);
-
-    if (!result) {
-      return res.status(401).json({ message: "User doesn't exist" });
-    }
-
-    // Check if token is blocked in Redis
+    // Check if token is blocked in Redis (before DB lookup)
     const isBlocked = await redisClient.exists(`token:${token}`);
     if (isBlocked) {
       return res.status(401).json({ message: "Token is blocked" });
+    }
+
+    // Check if user exists
+    const result = await User.findById(id);
+    if (!result) {
+      return res.status(401).json({ message: "User doesn't exist" });
     }
 
     // Attach user to request

@@ -11,51 +11,90 @@ export const createProblem = async (req, res) => {
     description,
     difficulty,
     tags,
-    viaiableTestCases,
+    visibleTestCases,
     hiddenTestCases,
-    strartCode,
+    startCode,
     problemCreator,
     referenceSolution,
   } = req.body;
 
   try {
-    for (const { language, completeCode } of referenceSolution) {
-      // sourcd_code
-      //language_id
-      //stdin
-      //expectedOutput
+    // Basic validation for reference solution and test cases to avoid runtime errors
+    if (!referenceSolution) {
+      return res
+        .status(400)
+        .send("Reference solution is required");
+    }
 
-      const languageId = getLanguageById(language); // created in utils file
+    const referenceSolutions = Array.isArray(referenceSolution)
+      ? referenceSolution
+      : [referenceSolution];
 
-      const submissions = viaiableTestCases.map((testcase) => ({
-        source_code: completeCode,
-        language_id: languageId,
-        stdin: testcase.input,
-        expected_output: testcase.expected_output,
-      }));
+    if (!visibleTestCases) {
+      return res
+        .status(400)
+        .send("Visible test cases are required");
+    }
 
-      const submitResult = await submitBatch(submissions);  // created in utils file
-      // console.log(submissionBatch)
+    // Validate reference solution with test cases
+    try {
+      for (const { language, completeCode } of referenceSolutions) {
+        const languageId = getLanguageById(language);
 
-      const resultToken = submitResult.map((value) => value.token);
+        if (!languageId) {
+          return res
+            .status(400)
+            .send("Invalid language in reference solution");
+        }
 
-      const testResult = await submitToken(resultToken);   // created in utils file
+        // If visibleTestCases is a single object, wrap it in array
+        const testCases = Array.isArray(visibleTestCases)
+          ? visibleTestCases
+          : [visibleTestCases];
 
-      for (const test of testResult) {
-        if (test.status_id != 3) return res.status(400).send("Error Occured ");
+        const submissions = testCases.map((testcase) => ({
+          source_code: completeCode,
+          language_id: languageId,
+          stdin: testcase.input,
+          expected_output: testcase.output,
+        }));
+
+        const submitResult = await submitBatch(submissions);
+        const resultToken = submitResult.map((value) => value.token);
+        const testResult = await submitToken(resultToken);
+
+        for (const test of testResult) {
+          if (test.status_id !== 3)
+            return res.status(400).send("Error Occurred in Test Case");
+        }
+      }
+      
+    } catch (error) {
+      // If Judge0 returns 403 (not subscribed / key issue), skip validation but continue problem creation
+      if (error?.response?.status === 403) {
+        console.error(
+          "Judge0 subscription / key error while validating problem:",
+          error?.response?.data || error.message
+        );
+      } else {
+        throw error;
       }
     }
-    // we can store it in out DB
+
+    // Store in DB
     const userProblem = await problem.create({
       ...req.body,
-      problemCreator: req.result._id,
+      problemCreator: req.user._id,
     });
-    res.status(201).send("Problem solve Sucessfully");
+
+    res.status(201).send("Problem saved successfully");
   } catch (error) {
-    res.status(400).send("Error:" + error);
+    res.status(400).send("Error: " + error.message);
   }
 };
 
+
+/* ================= UPDATE PROBLEM ================= */
 export const updateProblem = async (req, res) => {
   const { id } = req.params;
   const {
@@ -63,112 +102,106 @@ export const updateProblem = async (req, res) => {
     description,
     difficulty,
     tags,
-    viaiableTestCases,
+    visibleTestCases,
     hiddenTestCases,
-    strartCode,
+    startCode,
     problemCreator,
     referenceSolution,
   } = req.body;
 
   try {
-    // checking the id
     if (!id) {
-      return res.status(401).send("Missing Id field");
+      return res.status(400).send("Missing Id field");
     }
-    // checking if id is alredy or not there in db
+
     const DsaProblem = await problem.findById(id);
     if (!DsaProblem) {
-      return res.status(404).send("ID is not persent in server");
+      return res.status(404).send("ID is not present in server");
     }
 
     for (const { language, completeCode } of referenceSolution) {
-      // sourcd_code
-      //language_id
-      //stdin
-      //expectedOutput
-
       const languageId = getLanguageById(language);
 
-      const submissions = viaiableTestCases.map((testcase) => ({
+      const testCases = Array.isArray(visibleTestCases)
+        ? visibleTestCases
+        : [visibleTestCases];
+
+      const submissions = testCases.map((testcase) => ({
         source_code: completeCode,
         language_id: languageId,
         stdin: testcase.input,
-        expected_output: testcase.expected_output,
+        expected_output: testcase.output,
       }));
 
       const submitResult = await submitBatch(submissions);
-      // console.log(submissionBatch)
-
       const resultToken = submitResult.map((value) => value.token);
-
       const testResult = await submitToken(resultToken);
 
       for (const test of testResult) {
-        if (test.status_id != 3) return res.status(400).send("Error Occured ");
+        if (test.status_id !== 3)
+          return res.status(400).send("Error Occurred in Test Case");
       }
     }
-    // we can store it in out DB
+
     const newProblem = await problem.findByIdAndUpdate(
       id,
       { ...req.body },
-      { renVlidators: true },
-      { new: true }
+      {
+        runValidators: true,
+        new: true,
+      }
     );
 
-    req.status(200).send(newProblem);
+    res.status(200).send(newProblem);
   } catch (error) {
-    res.status(500).send("Error:" + error);
+    res.status(500).send("Error: " + error.message);
   }
 };
 
+/* ================= DELETE PROBLEM ================= */
 export const deleteProblem = async (req, res) => {
   const { id } = req.params;
 
   try {
-    if (!id) return res.status(400).send("ID is Missing ");
+    if (!id) return res.status(400).send("ID is Missing");
 
     const deletedProblem = await problem.findByIdAndDelete(id);
+    if (!deletedProblem)
+      return res.status(404).send("Problem not found");
 
-    if (!deletedProblem) return res.status(404).send("Problem is missing");
-
-    res.status(200).ssend("Sucessfully Deleted");
+    res.status(200).send("Successfully Deleted");
   } catch (error) {
-    res.status(400).send("Error:" + error);
+    res.status(400).send("Error: " + error.message);
   }
 };
 
+/* ================= GET PROBLEM BY ID ================= */
 export const getProblemById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    if (!id) return res.status(400).send("ID is Missing ");
+    if (!id) return res.status(400).send("ID is Missing");
 
     const getProblem = await problem.findById(id);
+    if (!getProblem)
+      return res.status(404).send("Problem not found");
 
-    if (!getProblem) return res.status(404).send("Problem is missing");
-
-    res.status(200).ssend(getProblem);
+    res.status(200).send(getProblem);
   } catch (error) {
-    res.status(500).send("Error:" + error);
+    res.status(500).send("Error: " + error.message);
   }
 };
 
+/* ================= GET ALL PROBLEMS ================= */
 export const getAllProblem = async (req, res) => {
   try {
-    // getting all the problem in the {} in this object 
-    const getProblem = await problem.findById({});
+    const getProblem = await problem.find({});
 
-    if (!getProblem.length ===0)
-       return res.status(404).send("Problem is missing");
+    if (getProblem.length === 0)
+      return res.status(404).send("No problems found");
 
-    res.status(200).ssend(getProblem);
+    res.status(200).send(getProblem);
   } catch (error) {
-    res.status(500).send("Error:" + error);
+    res.status(500).send("Error: " + error.message);
   }
 };
-
-
-// export const solveProblem = async (req, res) =>{
-  
-
-// }

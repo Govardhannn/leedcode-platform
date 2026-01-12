@@ -12,10 +12,10 @@ problemRoute.delete("/delete/:id",adminMiddleware, deleteProblem);
 
 
 
+
 problemRoute.get("/problemById/:id", userMiddleware, getProblemById);
 problemRoute.get("/getAllProblem", userMiddleware, getAllProblem);
 // problemRoute.get("/problemSolveByUser ",userMiddleware,  problemSolveByUser);
 // fetch
 // update
-// delete
-//
+
