@@ -3,8 +3,8 @@ import axios from "axios";
 export const getLanguageById = (lang) => {
   const language = {
     "c++": 54,
-    "java": 62,
-    "javascript": 63,
+    java: 62,
+    javascript: 63,
   };
   return language[lang.toLowerCase()];
 };
@@ -41,7 +41,10 @@ export const submitBatch = async (submissions) => {
       return response.data;
     } catch (error) {
       // Surface Judge0 errors so callers can decide how to handle them
-      console.error("Judge0 submitBatch error:", error?.response?.data || error.message);
+      console.error(
+        "Judge0 submitBatch error:",
+        error?.response?.data || error.message
+      );
       throw error;
     }
   }
@@ -60,41 +63,39 @@ export const submitBatch = async (submissions) => {
   }
 };
 
+export const submitToken = async (resultToken) => {
+  const options = {
+    method: "GET",
+    url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
+    params: {
+      tokens: resultToken.join(","), // becz it is a array , need to conver this to string
+      base64_encoded: "true",
+      fields: "*",
+    },
+    headers: {
+      "x-rapidapi-key": process.env.RAPIDAPI_KEY,
+      "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
+    },
+  };
 
-export const submitToken = async(resultToken)=>{
-
-
-
-const options = {
-  method: 'GET',
-  url: 'https://judge0-ce.p.rapidapi.com/submissions/batch',
-  params: {
-    tokens: resultToken.join(","),  // becz it is a array , need to conver this to string
-    base64_encoded: 'true',
-    fields: '*'
-  },   
-  headers: {
-    'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-    'x-rapidapi-host': 'judge0-ce.p.rapidapi.com'
+  async function fetchData() {
+    try {
+      const response = await axios.request(options);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Judge0 submitToken error:",
+        error?.response?.data || error.message
+      );
+      throw error;
+    }
   }
+
+  const result = await fetchData();
+
+  if (!result || !result.submissions) {
+    throw new Error("Invalid response from Judge0 in submitToken");
+  }
+
+  return result.submissions;
 };
-
-async function fetchData() {
-  try {
-    const response = await axios.request(options);
-    return response.data;
-  } catch (error) {
-    console.error("Judge0 submitToken error:", error?.response?.data || error.message);
-    throw error;
-  }
-}
-
- const result = await fetchData();
-
- if (!result || !result.submissions) {
-  throw new Error("Invalid response from Judge0 in submitToken");
- }
-
- return result.submissions;
-
-} 

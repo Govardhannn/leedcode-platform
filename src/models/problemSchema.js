@@ -32,20 +32,19 @@ const problemSchema = new Schema({
       required: true,
     },
   },
-  hiddenTestCases: {
-    input: {
-      type: String,
-      required: true,
+ 
+  hiddenTestCases: [
+    {
+      input: {
+        type: String,
+        required: true,
+      },
+      output: {
+        type: String,
+        required: true,
+      },
     },
-    output: {
-      type: String,
-      required: true,
-    },
-    explanation: {
-      type: String,
-      required: true,
-    },
-  },
+  ],
   startCode: {
     language: {
       type: String,

@@ -33,8 +33,13 @@ const userSchema = new Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    // till new what ever the problem is solve it store here - unique
     problemSolve: {
-      type: [String],
+      type:[{
+        type:Schema.Type.Object,
+        ref: "problem"
+      }],
+      unique: true
     },
   },
   { timestamps: true }

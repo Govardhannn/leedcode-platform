@@ -62,6 +62,7 @@ export const createProblem = async (req, res) => {
         const submitResult = await submitBatch(submissions);
         const resultToken = submitResult.map((value) => value.token);
         const testResult = await submitToken(resultToken);
+       
 
         for (const test of testResult) {
           if (test.status_id !== 3)
@@ -182,7 +183,8 @@ export const getProblemById = async (req, res) => {
   try {
     if (!id) return res.status(400).send("ID is Missing");
 
-    const getProblem = await problem.findById(id);
+    // .Select - this pring only thing mention in it breaces (-Hiddencase ) another case 
+    const getProblem = await problem.findById(id).select(' id  title description difficulty tags visibleTestCases referenceSolution startCode  ')
     if (!getProblem)
       return res.status(404).send("Problem not found");
 
@@ -195,12 +197,12 @@ export const getProblemById = async (req, res) => {
 /* ================= GET ALL PROBLEMS ================= */
 export const getAllProblem = async (req, res) => {
   try {
-    const getProblem = await problem.find({});
+    const getProblem = await problem.find({}).select("id titlr difficulty tags  ")
 
     if (getProblem.length === 0)
       return res.status(404).send("No problems found");
 
-    res.status(200).send(getProblem);
+    res.status(200).send(getProblem)
   } catch (error) {
     res.status(500).send("Error: " + error.message);
   }

@@ -51,5 +51,4 @@ const submissionSchema = new Schema(
 );
 
 const submission = mongoose.model("submissions", submissionSchema);
-
 export default submission;
