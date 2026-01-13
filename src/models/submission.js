@@ -50,5 +50,5 @@ const submissionSchema = new Schema(
   { timestamps: true }
 );
 
-const submission = mongoose.model("submissions", submissionSchema);
+const   submission = mongoose.model("submissions", submissionSchema);
 export default submission;

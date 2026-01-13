@@ -36,7 +36,7 @@ const userSchema = new Schema(
     // till new what ever the problem is solve it store here - unique
     problemSolve: {
       type:[{
-        type:Schema.Type.Object,
+        type:Schema.Types.ObjectId,
         ref: "problem"
       }],
       unique: true

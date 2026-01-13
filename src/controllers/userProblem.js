@@ -1,9 +1,13 @@
 import problem from "../models/problemSchema.js";
+import User from "../models/userModel.js";
 import {
   getLanguageById,
   submitBatch,
   submitToken,
 } from "../utils/problemUtility.js";
+
+
+/* ================= CREATE PROBLEM  ================= */
 
 export const createProblem = async (req, res) => {
   const {
@@ -205,5 +209,29 @@ export const getAllProblem = async (req, res) => {
     res.status(200).send(getProblem)
   } catch (error) {
     res.status(500).send("Error: " + error.message);
+  }
+};
+
+/* ================= GET SOLVED ALL PROBLEMS ================= */
+
+export const problemSolveByUser = async (req, res) => {
+  try {
+
+    const userId  = req.result.id;
+    
+
+    const user = await User.findById(userId).populate({
+      path:'problemSolved',
+      select:"_id title difficulty tags"
+    })
+    
+    res.status(200).send(user)
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
   }
 };

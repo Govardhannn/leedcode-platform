@@ -3,7 +3,7 @@ import express from "express";
 export const problemRoute = express.Router();
 import { adminMiddleware } from "../middleware/adminMiddleware.js";
 import {userMiddleware} from "../middleware/userMiddleware.js"
-import { createProblem, updateProblem, deleteProblem , getProblemById , getAllProblem, } from "../controllers/userProblem.js";
+import { createProblem, updateProblem, deleteProblem , getProblemById , getAllProblem, problemSolveByUser } from "../controllers/userProblem.js";
 
 //create
 problemRoute.post("/create" , adminMiddleware  , createProblem);
@@ -15,7 +15,7 @@ problemRoute.delete("/delete/:id",adminMiddleware, deleteProblem);
 
 problemRoute.get("/problemById/:id", userMiddleware, getProblemById);
 problemRoute.get("/getAllProblem", userMiddleware, getAllProblem);
-// problemRoute.get("/problemSolveByUser ",userMiddleware,  problemSolveByUser);
+problemRoute.get("/problemSolveByUser", userMiddleware, problemSolveByUser);
 // fetch
 // update
 

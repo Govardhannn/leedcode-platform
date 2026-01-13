@@ -1,4 +1,5 @@
 import { redisClient } from "../config/redis.js";
+import submission from "../models/submission.js";
 import User from "../models/userModel.js";
 import { validate } from "../utils/validater.js";
 import bcrypt from "bcrypt";
@@ -146,3 +147,22 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+// profile deleting here 
+export const deleteProfile = async (req, res)=>{
+   
+  try {
+    const userId = req.result.id;
+    // userSchema delete
+await User.findByIdAndDelete(userId)
+
+// submission se bhi delete karo ...
+submission.deleteMany({userId});
+
+res.status(200).send("delted sucessfully")
+    
+  } catch (error) {
+    res.status(500).send("Internal server error")
+    
+  }
+}
