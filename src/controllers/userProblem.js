@@ -212,9 +212,9 @@ export const getAllProblem = async (req, res) => {
   }
 };
 
-/* ================= GET SOLVED ALL PROBLEMS ================= */
+/* ================= GETSUBMITED PROBLEM ================= */
 
-export const problemSolveByUser = async (req, res) => {
+export const submitedProblem = async (req, res) => {
   try {
 
     const userId  = req.result.id;

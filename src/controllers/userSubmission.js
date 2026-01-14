@@ -136,5 +136,23 @@ export const runCode = async (req, re) => {
   }
 };
 
+
+export const problemSolveByUser = async (req, res)=>{
+
+  try {
+    const userId = req.result.id;
+    const problemId = req.params.pid;
+
+    const ans = await submission.find({userId, problemId})
+
+    if(!ans.length==0)
+      res.status(200).send("No Submission is present")
+
+    res.status(200).send(ans)
+
+  } catch (error) {
+    res.status(500).send('Internal server Error')
+  }
+}
 // This API is working fine - but Becz of the Judge0  API limit over for it is throwing error
 // in terminal but it is storing the data in DB - working
